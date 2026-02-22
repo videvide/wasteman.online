@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+{% block body %}
+<h1>Cart page</h1>
+<p>This is where cart items goes...</p>
+
+{% if forms_and_variations %}
+<form method="post">
+    {% csrf_token %}
+    {{ formset.management_form }}
+    {% for form_and_variation in forms_and_variations %}
+        {% for variation, form in form_and_variation.items %}
+            {{variation.poster.name}}
+            {{variation.height}}cm x {{variation.width}}cm
+            {{form}}
+        {% endfor %}
+    {% endfor %}
+    <input type="submit" value="Update cart">
+</form>
+<form action="{% url 'checkout' %}" method="post">
+    {% csrf_token %}
+    <input type="submit" value="Continue to checkout">
+</form>
+{% endif %}
+
+{% endblock body %}

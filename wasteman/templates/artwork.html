@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+{% block body %}
+<h1>Artwork page</h1>
+<p>This is where posters and paintings pages is</p>
+
+{% if poster %}
+    <p>{{ poster.name }}</p>
+    <form method="post">
+        {% csrf_token %}
+        {{ form }}
+        <input type="submit" value="Add to cart">
+    </form>
+{% endif %}
+
+{% if painting %}
+    <p>{{ painting.name }}</p>
+    <p>Contact to buy!</p>
+{% endif %}
+
+{% endblock body %}

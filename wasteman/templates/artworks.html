@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+{% block body %}
+<h1>Artworks page</h1>
+<p>This is where artworks goes...</p>
+
+{% if posters %}
+    {% for poster in posters %}
+        <p>{{ poster.name }}</p>
+        <a href="{% url 'poster' poster.id %}">View poster</a>
+    {% endfor %}
+{% endif %}
+
+{% if paintings %}
+    {% for painting in paintings %}
+        <p>{{ painting.name }}</p>
+        <a href="{% url 'painting' painting.id %}">View poster</a>
+    {% endfor %}
+{% endif %}
+
+{% endblock body %}
