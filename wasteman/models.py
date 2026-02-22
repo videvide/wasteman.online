@@ -53,6 +53,7 @@ class Customer(UserInformation):
         return self.user.DoesNotExist() == True
 
 
+# BaseProduct
 class Artwork(models.Model):
     """Base class with generic information."""
     wasteman = models.ForeignKey(Wasteman, on_delete=models.CASCADE)
@@ -61,6 +62,7 @@ class Artwork(models.Model):
     year = models.CharField(max_length=4, blank=True, null=True)
 
 
+# ProductImage
 class ArtworkImage(ImageBase):
     artwork = models.ForeignKey(Artwork, on_delete=models.CASCADE)
 
@@ -75,11 +77,13 @@ class Details(models.Model):
     in_stock = models.BooleanField(default=True)
 
 
+# SingleItemProduct
 class Painting(Artwork, Details):
     """Contact to purchase."""
     ...
 
 
+# How to make this more generic?
 class PosterRatio(models.TextChoices):
     SQUARE = "square", "Square"
     RECTANGLE = "rectangle", "Rectangle"
@@ -92,6 +96,7 @@ SQUARE_SIZES_AND_PIRCES = [(30,30,150), (50,50,300), (70,70,500)]
 RECTANGULAR_SIZES_AND_PRICES = [(30,40,300), (50,70,500), (70,100,700)]
 
 
+# VariationProduct
 class Poster(Artwork):
     ratio = models.CharField(max_length=10, choices=PosterRatio)
 
@@ -117,6 +122,7 @@ class Poster(Artwork):
         return self.name
 
 
+# VariationProductVariation
 class PosterVariation(Details):
     """This class have variation specific info and is what we add to cart/order."""
     poster = models.ForeignKey(Poster, related_name="variations", on_delete=models.CASCADE)
@@ -158,6 +164,7 @@ class PosterOrderStatus(models.TextChoices):
     CANCELED = "canceled", "Canceled"
 
 
+# Make this to be ProductOrder and list both Product and Variation
 class PosterOrder(models.Model):
     """Order for posters."""
     wasteman = models.ForeignKey(Wasteman, related_name="sales", on_delete=models.CASCADE)
@@ -168,4 +175,4 @@ class PosterOrder(models.Model):
     created_at = models.DateTimeField(default=timezone.now)
     # Stripe stuff...
     stripe_checkout_session_id = models.CharField(max_length=255)
-    
+
