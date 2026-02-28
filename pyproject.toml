@@ -13,16 +13,3 @@ dependencies = [
     "pytest-django>=4.12.0",
     "stripe>=14.3.0",
 ]
-
-[dependency-groups]
-dev = [
-    "django-stubs[compatible-mypy]>=5.2.9",
-    "mypy>=1.19.1",
-]
-
-[tool.mypy]
-plugins = ["mypy_django_plugin.main"]
-
-# Could be recognized by DJANGO_SETTINGS_MODULE env variable
-[tool.django-stubs]
-django_settings_module = "wasteman.settings"
