@@ -155,14 +155,14 @@ class Address(models.Model):
     @property
     def text_output(self):
         return f"""
-            Name: {self.first_name} {self.last_name}
-            Line 1: {self.line_1}
-            Line 2: {self.line_2}
-            City: {self.city}
-            State: {self.state}
-            Zip: {self.zip}
-            Country: {self.country}
-            Email: {self.email}
+                Name: {self.first_name} {self.last_name}
+                Line 1: {self.line_1}
+                Line 2: {self.line_2 if self.line_2 else ""}
+                City: {self.city}
+                State: {self.state if self.state else ""}
+                Zip: {self.zip}
+                Country: {self.country}
+                Email: {self.email}
         """
 
 
@@ -183,12 +183,9 @@ class PosterOrder(models.Model):
     @property
     def print_line_items(self):
         """Return all line_items (variations) as text."""
-        output = "poster_id, width, height, quantity\n"
+        output = ""
         for ov in self.variations.all():
-            output += f"{ov.variation.poster.id}, \
-                        {ov.variation.width}, \
-                        {ov.variation.height} \
-                        {ov.variation.quantity}"
+            output += f"Poster ID: {ov.variation.poster.id} | {ov.variation.width}x{ov.variation.height}cm | {ov.quantity} st\n"
         return output
     
 
