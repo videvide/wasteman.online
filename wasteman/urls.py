@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.urls import path
 from django.views.generic import TemplateView
 
-from .views import home, register, logout, login, profile, poster, posters, cart, checkout, paintings, painting, webhook
+from .views import home, register, logout, login, profile, poster, posters, cart, checkout, paintings, painting, webhook, address
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -23,6 +23,7 @@ urlpatterns = [
     path("poster/<int:id>", poster, name="poster"),
 
     path("cart/", cart, name="cart"),
+    path("address/", address, name="address"),
     path("checkout/", checkout, name="checkout"),
     path("success/", TemplateView.as_view(template_name="success.html"), name="success"),
     path("cancel/", TemplateView.as_view(template_name="cancel.html"), name="cancel"),

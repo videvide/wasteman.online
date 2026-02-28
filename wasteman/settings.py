@@ -12,7 +12,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 
 from pathlib import Path
 
-from .utils import get_env_vars
+from .utils import get_env_vars, parse_sizes_and_prices
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -127,5 +127,26 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+SQUARE_SIZES_AND_PIRCES = parse_sizes_and_prices(get_env_vars("SQUARE_SIZES_AND_PIRCES"))
+RECTANGULAR_SIZES_AND_PRICES = parse_sizes_and_prices(get_env_vars("RECTANGULAR_SIZES_AND_PRICES"))
+
+SESSION_CART_KEY = "cart"
+SESSION_ADDRESS_KEY = "address_id"
+
 STRIPE_CHECKOUT_SUCCESS_URL = get_env_vars("STRIPE_CHECKOUT_SUCCESS_URL")
 STRIPE_CHECKOUT_CANCEL_URL = get_env_vars("STRIPE_CHECKOUT_CANCEL_URL")
+
+# Email settings
+if DEBUG:
+    EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+else:
+    EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+
+EMAIL_USE_TLS = True
+EMAIL_HOST = get_env_vars("EMAIL_HOST")
+EMAIL_PORT = get_env_vars("EMAIL_PORT")
+EMAIL_HOST_USER = get_env_vars("EMAIL_HOST_USER")
+EMAIL_HOST_PASSWORD = get_env_vars("EMAIL_HOST_PASSWORD")
+EMAIL_FROM_SENDER = get_env_vars("EMAIL_FROM_SENDER")
+# Enter the producer email address
+EMAIL_PRODUCER = get_env_vars("EMAIL_PRODUCER")

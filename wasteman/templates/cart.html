@@ -16,10 +16,8 @@
     {% endfor %}
     <input type="submit" value="Update cart">
 </form>
-<form action="{% url 'checkout' %}" method="post">
-    {% csrf_token %}
-    <input type="submit" value="Continue to checkout">
-</form>
+<!-- just add a anchor tag to the address page -->
+<a href="{% url 'address' %}">Continue to shipping address</a>
 {% endif %}
 
 {% endblock body %}

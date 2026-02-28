@@ -1,19 +1,24 @@
+import json
+
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import logout as logout_function
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login as login_function
 from django.contrib.auth.forms import PasswordChangeForm
 from django.forms import formset_factory
 from django.conf import settings
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 
-from .forms import RegisterForm, LoginForm, AddToCartForm, UpdateCartForm
-from .models import PosterVariation, Wasteman, Poster, Painting
+from .forms import AddressForm, RegisterForm, LoginForm, AddToCartForm, UpdateCartForm
+from .models import Address, PosterVariation, Wasteman, Poster, Painting, PosterOrder, PosterOrderStatus, PosterOrderVariation
 from .cart import Cart
 
+from .mail import send_producer_email, send_customer_receipt_email
 from .my_stripe import stripe
+
 
 def home(request):
     return render(request, "home.html", {"title": "Home Page"})
@@ -96,7 +101,6 @@ def paintings(request):
 
 def painting(request, id):
     painting = get_object_or_404(Painting, pk=id)
-    # edit template to handle painting.
     return render(request, "artwork.html", {"painting": painting})
 
 
@@ -104,57 +108,70 @@ def posters(request):
     return render(request, "artworks.html", {"posters": Poster.objects.all()})
 
 
-def poster(request, id):
-    poster = Poster.objects.get(pk=id)
-    variation_choices = [
-        (v.id, f"{v.height}cm x {v.width}cm")
-        for v in poster.variations.all()
+def prepare_variation_choices(poster):
+    """Prepares the variation choices for the form select input."""
+    return [
+        (
+            variation.id,
+            f"{variation.height}cm x {variation.width}cm: {variation.price} kr",
+        )
+        for variation in poster.variations.all()
     ]
-    if request.method == "POST":
-        form = AddToCartForm(request.POST, variation_choices=variation_choices)
-        if form.is_valid():
-            variation = form.cleaned_data["variation"]
-            quantity = form.cleaned_data["quantity"]
 
-            if request.session.has_key("cart"):
-                cart = Cart(session_cart=request.session.get("cart"))
+
+def poster(request, id):
+    """Renders poster page and handles adding to cart."""
+    poster = Poster.objects.get(pk=id)
+
+    if request.method == "POST":
+        form = AddToCartForm(request.POST, variation_choices=prepare_variation_choices(poster))
+        if form.is_valid():
+            if request.session.has_key(settings.SESSION_CART_KEY):
+                cart = Cart(session_cart=request.session.get(settings.SESSION_CART_KEY))
             else:
                 cart = Cart()
-            cart.update(variation, quantity, True)
+            cart.update(form.cleaned_data["variation"], form.cleaned_data["quantity"], True)
 
-            request.session["cart"] = cart.session_cart
-            request.session.save()
+            request.session[settings.SESSION_CART_KEY] = cart.session_cart
             messages.add_message(request, messages.SUCCESS, "Successfully added item to cart!")
-
     else:
-        form = AddToCartForm(initial={"quantity": 1}, variation_choices=variation_choices)
+        form = AddToCartForm(initial={"quantity": 1}, variation_choices=prepare_variation_choices(poster))
 
     return render(request, "artwork.html", {"poster": poster, "form": form})
         
 
 def cart(request):
-    cart = Cart(session_cart=request.session.get("cart"))
+    """Handles cart updates from the cart page."""
+    # Is this correct ?
+    # Should be constant 
+    cart = Cart(session_cart=request.session.get(settings.SESSION_CART_KEY))
+
     UpdateCartFormSet = formset_factory(UpdateCartForm, extra=0)
     
     if request.method == "POST":
         formset = UpdateCartFormSet(request.POST)
         if formset.is_valid():
-            cart.update_from_formset(formset.cleaned_data)
-            request.session["cart"] = cart.session_cart
-            request.session.save()
+            # look into cart functions 
+            cart.update_from_cart_page_formset(formset.cleaned_data)
+            request.session[settings.SESSION_CART_KEY] = cart.session_cart
             messages.add_message(request, messages.SUCCESS, "Successfully updated the cart!")
             return redirect("cart")
     
     else:
+        # Fetch all cart_items from cart to render
         formset = UpdateCartFormSet(
             initial=[
                 {
                     "variation": key,
                     "quantity": value,
                 }
+                # This is buggy af
                 for key, value in cart.items
             ]
         )
+        # Don't like!!!
+        # Fetch all variations that are also cart_items
+        # look into this...
         variations = [PosterVariation.objects.get(pk=x) for x, _ in cart.items]
         forms_and_variations = [] 
         for variation, form in zip(variations, formset):
@@ -164,50 +181,143 @@ def cart(request):
         request, 
         "cart.html", 
         {
+            # This is for formset management
+            "formset": formset,
             "forms_and_variations": forms_and_variations, 
-            "formset": formset
         }
     )
 
 
-"""Just make an anchor tag with redirect to this page..."""
-def checkout(request):
-    if request.method == "POST":
-        cart = Cart(session_cart=request.session.get("cart"))
-        try:
-            checkout_session = stripe.checkout.Session.create(
-                line_items=[
-                    {
-                        "price": variant.stripe_price_id,
-                        "quantity": quantity,
-                    } for variant, quantity in cart.prepare_for_checkout().items()
-                ],
-                mode="payment",
-                success_url=settings.STRIPE_CHECKOUT_SUCCESS_URL
-            )
-        except Exception as e:
-            """We could check for ValueError and the like for the data processing of cart items."""
-            """Django thinks this is a response object, but it is a freaking string..."""
-            print(e)
-            """Should return something else..."""
-            messages.add_message(request, messages.INFO, "Sorry, something went wrong! Please try again or contact support.")
-            return redirect("cart")
-        
-        # Empty cart before redirecting to checkout, if checkout is canceled it is still cleared.
-        cart.clear(request)
-        # Create an order object and set status to unpaid and wait for webhook...
-        return redirect(checkout_session.url)
-    
-    else:
+def address(request):
+    """Take address from user and save to database and session."""
+    if not request.session.has_key(settings.SESSION_CART_KEY):
+        messages.add_message(request, messages.ERROR, "Invalid cart session.")
         return redirect("cart")
     
+    if request.method == "POST":
+        form = AddressForm(request.POST)
+        if form.is_valid():
+            address = Address.objects.create(
+                first_name = form.cleaned_data["first_name"],
+                last_name = form.cleaned_data["last_name"],
+                line_1 = form.cleaned_data["line_1"],
+                line_2 = form.cleaned_data["line_2"],
+                city = form.cleaned_data["city"],
+                state = form.cleaned_data["state"],
+                zip = form.cleaned_data["zip"],
+                country = form.cleaned_data["country"],
+                email = form.cleaned_data["email"],
+            )
+            request.session[settings.SESSION_ADDRESS_KEY] = address.id
+            return redirect("checkout")
+    else:
+        form = AddressForm()
 
+    return render(request, "address.html", {"form": form})
+
+
+def checkout(request):
+    """
+        This is the view to save checkout information to database and create a Stripe checkout session.
+    """
+    if not request.session.has_key(settings.SESSION_ADDRESS_KEY):
+        messages.add_message(request, messages.ERROR, "Invalid checkout session.")
+        return redirect("cart")
+    
+    cart = Cart(session_cart=request.session.get(settings.SESSION_CART_KEY))
+    try:
+        checkout_session = stripe.checkout.Session.create(
+            line_items=[
+                {
+                    "price": variant.stripe_price_id,
+                    "quantity": quantity,
+                } for variant, quantity in cart.prepare_for_checkout().items() # What???
+            ],
+            mode="payment",
+            success_url=settings.STRIPE_CHECKOUT_SUCCESS_URL
+        )
+
+    # This is big wtf...
+    except Exception as e:
+        """We could check for ValueError and the like for the data processing of cart items."""
+        """Django thinks this is a response object, but it is a freaking string..."""
+        print(e)
+        """Should return something else..."""
+        messages.add_message(request, messages.INFO, "Sorry, something went wrong! Please try again or contact support.")
+        return redirect("cart")
+    
+    address = Address.objects.get(pk=request.session[settings.SESSION_ADDRESS_KEY])
+    poster_order = PosterOrder.objects.create(
+        address=address, 
+        stripe_checkout_session_id=checkout_session.id
+    )
+    # Wtf on the prepare stuff... needs tests!!! MF!!!!!!!! TEST!!!!!!
+    # This feels off...
+    # This could as well be add_cart_items_to_poster_order(poster_order)
+    for variation, quantity in cart.prepare_cart_items_for_poster_order().items():
+        poster_order_variation = PosterOrderVariation.objects.create(
+            poster_order=poster_order,
+            variation=variation,
+            quantity=quantity,
+            unit_price=variation.price
+        )
+        poster_order.variations.add(poster_order_variation)
+
+    # Empty cart and del poster_order_id from session before checkout. TODO: Improve.
+    cart.clear(request)
+    del request.session[settings.SESSION_ADDRESS_KEY]
+    
+    return redirect(checkout_session.url)
+    
+
+# Change this to fetch from environment variable.
+endpoint_secret = "whsec_0b292f3cc9bfa5317d9dd21c24059860cf3ea3f922947fb81be27c3776fbd1fd"
+"""We want to listen for webhooks of finished payments and mark order as paid and start delivery."""
+@csrf_exempt
 def webhook(request):
-    # should receive the Stripe webhook in json format...
-    # https://docs.stripe.com/api/events/object?api-version=2026-01-28.preview&rds=1
+    """
+        This view handles Stripe webhooks that they send on events.
+    """
+    # Raw request body containing json string.
+    payload = request.body
+    event = None
 
-    # Need endpoint secret 
-    # Replace this endpoint secret with your unique endpoint secret key
-    # If you're testing with the CLI, run 'stripe listen' to find the secret key
-    # If you defined your endpoint using the API or the Dashboard, check your webhook settings for your endpoint secret: https://dashboard.stripe.com/webhooks
-    return HttpResponse("Coming soon...")
+    try:
+        event = stripe.Event.construct_from(
+            json.loads(payload), stripe.api_key
+        )
+    except ValueError as e:
+        # Invalid payload
+        return HttpResponse(status=400)
+    
+    """We should probably always verify..."""
+    """Could be to allow stripe listen."""
+    if endpoint_secret:
+        # Only verify the event if you've defined an endpoint secret
+        # Otherwise, use the basic event deserialized with JSON
+        sig_header = request.headers.get("stripe-signature")
+        try:
+            event = stripe.Webhook.construct_event(
+                payload, sig_header, endpoint_secret
+            )
+        except stripe.error.SignatureVerificationError as e:
+            print('⚠️  Webhook signature verification failed.' + str(e))
+            return JsonResponse({"success": False})
+
+    if event.type == "checkout.session.completed":
+        poster_order = PosterOrder.objects.get(
+            stripe_checkout_session_id=event["data"]["object"]["id"]
+        )
+        poster_order.stripe_payment_intent_id = event["data"]["object"]["payment_intent"]
+        poster_order.status = PosterOrderStatus.PAID
+        poster_order.save()
+
+        # This is current stage...
+        send_producer_email(poster_order)
+        send_customer_receipt_email(poster_order)
+
+    else:
+        # Drop? 
+        return HttpResponse(200)
+
+    return HttpResponse()
