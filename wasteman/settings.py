@@ -122,10 +122,7 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 STATIC_ROOT = 'static/'
-# This could also be set to projects.
-# STATICFILES_DIRS = [
-#     BASE_DIR / "static/"
-# ]
+
 MEDIA_URL = 'media/'
 MEDIA_ROOT = 'media/'
 

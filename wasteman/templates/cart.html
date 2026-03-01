@@ -1,7 +1,6 @@
 {% extends 'base.html' %}
 {% block body %}
-<h1>Cart page</h1>
-<p>This is where cart items goes...</p>
+<h1>Cart</h1>
 
 {% if forms_and_variations %}
 <form method="post">
@@ -18,6 +17,8 @@
 </form>
 <!-- just add a anchor tag to the address page -->
 <a href="{% url 'address' %}">Continue to shipping address</a>
+{% else %}
+    <p>Waiting for you to add items to cart...</p>
 {% endif %}
 
 {% endblock body %}

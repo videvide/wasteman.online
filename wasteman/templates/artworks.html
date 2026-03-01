@@ -1,7 +1,6 @@
 {% extends 'base.html' %}
 {% block body %}
-<h1>Artworks page</h1>
-<p>This is where artworks goes...</p>
+<h1>{{ page }}</h1>
 
 {% if posters %}
     {% for poster in posters %}
@@ -15,6 +14,10 @@
         <p>{{ painting.name }}</p>
         <a href="{% url 'painting' painting.id %}">View poster</a>
     {% endfor %}
+{% endif %}
+
+{% if not posters or paintings %}
+    <p>Waiting for {{ page|lower }} to show up...</p>
 {% endif %}
 
 {% endblock body %}

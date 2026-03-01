@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document - {% block title %}{% endblock title %}</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'wasteman/main.css' %}">
     {% block head %}{% endblock head %}
     {% block script %}{% endblock script %}
 </head>
@@ -11,23 +13,15 @@
     <nav>
         <ul>
             <li><a href="{% url 'home' %}">Home</a></li>
-            <li><a href="{% url 'terms' %}">Terms of service</a></li>
             <li><a href="{% url 'posters' %}">Posters</a></li>
             <li><a href="{% url 'paintings' %}">Paintings</a></li>
             <li><a href="{% url 'cart' %}">
                 Cart 
                 {% if request.session.cart %}
-                    ( {{ request.session.cart.total }} )
+                ( {{ request.session.cart.total }} )
                 {% endif %}
             </a></li>
-             {% if not request.user.is_authenticated %}
-                <li><a href="{% url 'register' %}">Register</a></li>
-                <li><a href="{% url 'login' %}">Login</a></li>
-            {% endif %}
-             {% if request.user.is_authenticated %}
-                <li><a href="{% url 'profile' %}">Profile</a></li>
-                <li><a href="{% url 'logout' %}">Logout</a></li>
-            {% endif %}
+            <li><a href="{% url 'terms' %}">Terms of service</a></li>
         </ul>
     </nav>
 

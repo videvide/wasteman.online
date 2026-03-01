@@ -98,7 +98,7 @@ def logout(request):
 
 
 def paintings(request):
-    return render(request, "artworks.html", {"paintings": Painting.objects.all()})
+    return render(request, "artworks.html", {"paintings": Painting.objects.all(), "page": "Paintings"})
 
 
 def painting(request, id):
@@ -107,7 +107,7 @@ def painting(request, id):
 
 
 def posters(request):
-    return render(request, "artworks.html", {"posters": Poster.objects.all()})
+    return render(request, "artworks.html", {"posters": Poster.objects.all(), "page": "Posters"})
 
 
 def prepare_variation_choices(poster):

@@ -11,10 +11,10 @@ urlpatterns = [
 
     path('', home, name="home"),
 
-    path("profile", profile, name="profile"),
-    path("register/", register, name="register"),
-    path("login/", login, name="login"),
-    path("logout/", logout, name="logout"),
+    # path("profile", profile, name="profile"),
+    # path("register/", register, name="register"),
+    # path("login/", login, name="login"),
+    # path("logout/", logout, name="logout"),
 
     path("terms-of-service/", TemplateView.as_view(template_name="terms.html"), name="terms"),
 
