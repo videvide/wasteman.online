@@ -27,9 +27,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = get_env_vars("DJANGO_SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = bool(get_env_vars("DJANGO_DEBUG"))
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = get_env_vars("ALLOWED_HOSTS").split(",")
 
 
 # Application definition
@@ -121,6 +121,13 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
 STATIC_URL = 'static/'
+STATIC_ROOT = 'static/'
+# This could also be set to projects.
+# STATICFILES_DIRS = [
+#     BASE_DIR / "static/"
+# ]
+MEDIA_URL = 'media/'
+MEDIA_ROOT = 'media/'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
@@ -135,6 +142,7 @@ SESSION_ADDRESS_KEY = "address_id"
 
 STRIPE_CHECKOUT_SUCCESS_URL = get_env_vars("STRIPE_CHECKOUT_SUCCESS_URL")
 STRIPE_CHECKOUT_CANCEL_URL = get_env_vars("STRIPE_CHECKOUT_CANCEL_URL")
+STRIPE_SECRET_KEY = get_env_vars("STRIPE_SECRET_KEY")
 STRIPE_ENDPOINT_SECRET = get_env_vars("STRIPE_ENDPOINT_SECRET")
 
 # Email settings

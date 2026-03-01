@@ -1,6 +1,8 @@
+from django.conf import settings
 from django.contrib import admin
 from django.urls import path
 from django.views.generic import TemplateView
+from django.conf.urls.static import static
 
 from .views import home, register, logout, login, profile, poster, posters, cart, checkout, paintings, painting, webhook, address
 
@@ -30,3 +32,7 @@ urlpatterns = [
 
     path("webhook/", webhook, name="webhook")
 ]
+
+if settings.DEBUG == False:
+    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT) 

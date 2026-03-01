@@ -11,7 +11,12 @@ wheels/
 # Virtual environments
 .venv
 
+# Django
+/static/
+/media/
+db.sqlite3
+
+
 # Other
 .envrc
-db.sqlite3
 todo.md

@@ -42,7 +42,7 @@ class Cart:
 
 
     def update_from_formset(self, request, formset_data):
-        """This is when we run from cart page before checkout..."""
+        """This is from cart page."""
         # Fix this with types or something cleaner...
         # [{'variation': 1, 'quantity': 20, 'remove': False}]
         for item in formset_data:
@@ -61,6 +61,7 @@ class Cart:
 
 
     def create_variations_and_formset_dict(self, formset):
+        """This is for the cart page."""
         variations_and_forms = []
         for variation, form in zip(self.get_variations_list(), formset):
             variations_and_forms.append({variation: form})
