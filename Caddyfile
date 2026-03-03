@@ -1,0 +1,16 @@
+# These variables could be set here or in the systemd environment...
+wasteman.online {
+	reverse_proxy 127.0.0.1:1212
+	# serve static files 
+	handle /static/* {
+		# Static location variable 
+		root * /home/admin/wasteman/static
+		file_server
+	}
+	# serve media 
+	handle /media/* {
+		# media location variable 
+		root * /home/admin/wasteman/media
+		file_server
+	}
+}
