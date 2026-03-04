@@ -1,13 +1,23 @@
+import io
+
 from django.db import models
 from django.contrib.auth.models import User
 from django.utils import timezone
 from django.conf import settings
+from django.utils.crypto import get_random_string
+
+from PIL import Image
 
 from .my_stripe import stripe
 
 class ImageBase(models.Model):
     image = models.ImageField(upload_to="artwork_images/")
     alt_text = models.CharField(max_length=255, blank=True, null=True)
+
+    def save(self):
+        """Custom save method that use random string as file name."""
+        self.image.name = ".".join([get_random_string(length=12), self.image.name.split(".")[-1]])
+        super().save()
 
 
 class NewsletterEmail(models.Model):
@@ -57,6 +67,24 @@ class Artwork(models.Model):
 
 class ArtworkImage(ImageBase):
     artwork = models.ForeignKey(Artwork, related_name="images", on_delete=models.CASCADE)
+
+    def save(self):
+        """Custom save method with image compression."""
+        super().save()
+        image = Image.open(self.image.path)
+        low, high = 10, 95
+        while low <= high:
+            mid = (low + high) // 2
+            buffer = io.BytesIO()
+            image.save(buffer, "JPEG", quality=mid)
+            size_kb = buffer.tell() // 1024
+            breakpoint()
+            if size_kb <= settings.ARTWORK_IMAGE_TARGET_KB:
+                low = mid + 1
+            else:
+                high = mid - 1
+        image.save(self.image.path, quality=high, optimize=True)
+        return self
 
 
 class Details(models.Model):
