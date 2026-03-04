@@ -77,7 +77,6 @@ class ArtworkImage(ImageBase):
             buffer = io.BytesIO()
             image.save(buffer, "JPEG", quality=mid)
             size_kb = buffer.tell() // 1024
-            breakpoint()
             if size_kb <= settings.ARTWORK_IMAGE_TARGET_KB:
                 low = mid + 1
             else:

@@ -33,7 +33,6 @@ def home(request):
 def newsletter_confirmation(request, token):
     signer = Signer()
     try: 
-        breakpoint()
         email = signer.unsign(token)
         email = NewsletterEmail.objects.get(email=email)
     except BadSignature:
