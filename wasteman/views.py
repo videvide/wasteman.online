@@ -173,8 +173,10 @@ def cart(request):
         "cart.html", 
         {
             "formset": formset,
-            # Add images to cart items...
-            "forms_and_variations": cart.create_variations_and_formset_dict(formset), 
+            "forms_and_variations": cart.create_variations_and_formset_dict(formset),
+            "total_poster_cost": cart.get_total_poster_cost(),
+            "total_shipping_cost": cart.get_total_shipping_cost(),
+            "total_cost": cart.get_total_cost(),
         }
     )
 
@@ -210,9 +212,17 @@ def checkout(request):
         checkout_session = stripe.checkout.Session.create(
             shipping_options=[
                 {
-                    # Make sure shipping_rate from correct Stripe environment
-                    "shipping_rate": settings.STRIPE_SHIPPING_RATE_ID
-                }
+                    # We need to create shipping rate manually since we do not know order quantity
+                    "shipping_rate_data": {
+                        "type": "fixed_amount",
+                        "fixed_amount": {"amount": cart.get_total_shipping_cost_in_cents(), "currency": "sek"},
+                        "display_name": "Shipping cost",
+                        "delivery_estimate": {
+                            "minimum": {"unit": "business_day", "value": 3},
+                            "maximum": {"unit": "business_day", "value": 14},
+                        },
+                    },
+                },
             ],
             shipping_address_collection={"allowed_countries": get_all_shipping_countries()},
             mode="payment",

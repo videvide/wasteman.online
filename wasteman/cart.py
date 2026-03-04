@@ -1,3 +1,5 @@
+from decimal import Decimal
+
 from django.conf import settings
 
 from .models import PosterVariation
@@ -5,7 +7,26 @@ from .models import PosterVariation
 class Cart:
     def __init__(self, session_cart=None):
         self.items = session_cart["items"] if session_cart else {}
-        self.total = session_cart["total"] if session_cart else None
+        self.total = session_cart["total"] if session_cart else 0
+
+
+    def get_total_cost(self):
+        if self.total > 0:
+            return self.get_total_poster_cost() + self.get_total_shipping_cost()
+        return
+
+    def get_total_poster_cost(self):
+        return sum([variation.price for variation in self.get_variations_list()])
+    
+
+    def get_total_shipping_cost(self):
+        return Decimal(self.get_total_shipping_cost_in_cents() / 100)
+
+
+    def get_total_shipping_cost_in_cents(self):
+        if self.total > 1:
+            return settings.SHIPPING_BASE_RATE + (settings.SHIPPING_ADD_ON_RATE * self.total)
+        return settings.SHIPPING_BASE_RATE
 
 
     def add_or_update_cart_item(self, request, id, quantity, adding=False):
@@ -61,7 +82,7 @@ class Cart:
 
 
     def create_variations_and_formset_dict(self, formset):
-        """This is for the cart page."""
+        """Generates a list of items to display inside cart page."""
         variations_and_forms = []
         for variation, form in zip(self.get_variations_list(), formset):
             variations_and_forms.append({variation: form})

@@ -21,3 +21,7 @@ ul {
 .artwork-image {
     max-width: 100%;
 }
+
+.cart-artwork-image {
+    max-width: 150px;
+}

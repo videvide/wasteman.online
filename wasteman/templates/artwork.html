@@ -7,6 +7,7 @@
     <p>Description: {{ poster.description }}</p>
     <p>Year: {{ poster.year }}</p>
     <p>Ratio: {{ poster.ratio|capfirst }}</p>
+    <p>All sizes are available ✅</p>
     <form method="post">
         {% csrf_token %}
         {{ form }}
@@ -32,7 +33,7 @@
     <p>Width: {{ painting.width }}cm</p>
     <p>Height: {{ painting.height }}cm</p>
     <p>Available: {% if painting.in_stock %}✅{% else %}❌{% endif %}</p>
-    <p><a href="mailto:hello@wasteman.online">Contact to buy!</a></p>
+    <h3><a href="mailto:hello@wasteman.online">Contact to buy!</a></h3>
     {% if painting.images %}
         <ul class="artwork-images-ul">
             {% for image in painting.images.all %}
