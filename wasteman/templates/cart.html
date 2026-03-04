@@ -13,12 +13,15 @@
             {{form}}
         {% endfor %}
     {% endfor %}
-    <input type="submit" value="Update cart">
+    <p>
+        <input type="submit" value="Update cart">
+    </p>
 </form>
+<p>Fixed shipping fee - 95.00kr SEK</p>
 <!-- just add a anchor tag to the address page -->
-<a href="{% url 'address' %}">Continue to shipping address</a>
+<a href="{% url 'checkout' %}">Continue to checkout -></a>
 {% else %}
-    <p>Waiting for you to add items to cart...</p>
+    <p>Nothing here...</p>
 {% endif %}
 
 {% endblock body %}

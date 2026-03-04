@@ -34,9 +34,8 @@ class LoginForm(forms.Form):
 
 class AddToCartForm(forms.Form):
     """Form used on poster page to add poster to cart. Variation choices should be added from the view."""
-    variation = forms.ChoiceField(choices=[])
+    variation = forms.ChoiceField(choices=[], label="Choose size")
     quantity = forms.IntegerField(min_value=1, max_value=10)
-    # ?
     adding = forms.BooleanField(initial=True, widget=forms.HiddenInput())
 
     def __init__(self, *args, variation_choices=None, **kwargs):
@@ -49,19 +48,3 @@ class UpdateCartForm(forms.Form):
     variation = forms.CharField(widget=forms.HiddenInput(), help_text="Should be provided from view.")
     quantity = forms.IntegerField()
     remove = forms.BooleanField(required=False)
-
-
-class AddressForm(forms.ModelForm):
-    class Meta:
-        model = Address
-        fields = [
-            "first_name",
-            "last_name",
-            "line_1",
-            "line_2",
-            "city",
-            "state",
-            "zip",
-            "country",
-            "email"
-        ]

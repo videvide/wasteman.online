@@ -4,12 +4,13 @@ from django.urls import path
 from django.views.generic import TemplateView
 from django.conf.urls.static import static
 
-from .views import home, register, logout, login, profile, poster, posters, cart, checkout, paintings, painting, webhook, address
+from .views import home, register, logout, login, profile, poster, posters, cart, checkout, paintings, painting, webhook
 
 urlpatterns = [
     path('admin/', admin.site.urls),
 
     path('', home, name="home"),
+    path("about/", TemplateView.as_view(template_name="about.html"), name="about"),
 
     # path("profile", profile, name="profile"),
     # path("register/", register, name="register"),
@@ -25,7 +26,6 @@ urlpatterns = [
     path("poster/<int:id>", poster, name="poster"),
 
     path("cart/", cart, name="cart"),
-    path("address/", address, name="address"),
     path("checkout/", checkout, name="checkout"),
     path("success/", TemplateView.as_view(template_name="success.html"), name="success"),
     path("cancel/", TemplateView.as_view(template_name="cancel.html"), name="cancel"),
@@ -33,6 +33,5 @@ urlpatterns = [
     path("webhook/", webhook, name="webhook")
 ]
 
-if settings.DEBUG == False:
-    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT) 
+urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT) 

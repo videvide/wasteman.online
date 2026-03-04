@@ -121,10 +121,10 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
 STATIC_URL = 'static/'
-STATIC_ROOT = 'static/'
+STATIC_ROOT = BASE_DIR / 'static/'
 
 MEDIA_URL = 'media/'
-MEDIA_ROOT = 'media/'
+MEDIA_ROOT = BASE_DIR / 'media/'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
@@ -137,6 +137,7 @@ RECTANGULAR_SIZES_AND_PRICES = parse_sizes_and_prices(get_env_vars("RECTANGULAR_
 SESSION_CART_KEY = "cart"
 SESSION_ADDRESS_KEY = "address_id"
 
+STRIPE_SHIPPING_RATE_ID = get_env_vars("STRIPE_SHIPPING_RATE_ID")
 STRIPE_CHECKOUT_SUCCESS_URL = get_env_vars("STRIPE_CHECKOUT_SUCCESS_URL")
 STRIPE_CHECKOUT_CANCEL_URL = get_env_vars("STRIPE_CHECKOUT_CANCEL_URL")
 STRIPE_SECRET_KEY = get_env_vars("STRIPE_SECRET_KEY")

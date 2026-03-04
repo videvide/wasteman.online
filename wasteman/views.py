@@ -12,9 +12,9 @@ from django.forms import formset_factory
 from django.conf import settings
 from django.http import HttpResponse, JsonResponse
 
-from wasteman.utils import get_env_vars
+from wasteman.utils import get_all_shipping_countries
 
-from .forms import AddressForm, RegisterForm, LoginForm, AddToCartForm, UpdateCartForm
+from .forms import RegisterForm, LoginForm, AddToCartForm, UpdateCartForm
 from .models import Address, Wasteman, Poster, Painting, PosterOrder, PosterOrderStatus, PosterOrderVariation
 from .cart import Cart
 
@@ -173,44 +173,15 @@ def cart(request):
         "cart.html", 
         {
             "formset": formset,
+            # Add images to cart items...
             "forms_and_variations": cart.create_variations_and_formset_dict(formset), 
         }
     )
 
 
-def address(request):
-    """Take address from user and save to database and session."""
-    if not request.session.has_key(settings.SESSION_CART_KEY):
-        messages.add_message(request, messages.ERROR, "Invalid cart session.")
-        return redirect("cart")
-    
-    if request.method == "POST":
-        form = AddressForm(request.POST)
-        if form.is_valid():
-            address = Address.objects.create(
-                first_name = form.cleaned_data["first_name"],
-                last_name = form.cleaned_data["last_name"],
-                line_1 = form.cleaned_data["line_1"],
-                line_2 = form.cleaned_data["line_2"],
-                city = form.cleaned_data["city"],
-                state = form.cleaned_data["state"],
-                zip = form.cleaned_data["zip"],
-                country = form.cleaned_data["country"],
-                email = form.cleaned_data["email"],
-            )
-            request.session[settings.SESSION_ADDRESS_KEY] = address.id
-            return redirect("checkout")
-    else:
-        form = AddressForm()
-
-    return render(request, "address.html", {"form": form})
-
-
 def create_poster_order(request, checkout_session_id, cart: Cart):
     try:
-        address = Address.objects.get(pk=request.session[settings.SESSION_ADDRESS_KEY])
         poster_order = PosterOrder.objects.create(
-            address=address, 
             stripe_checkout_session_id=checkout_session_id
         )
         for variation, quantity in cart.get_items_for_poster_order():
@@ -230,23 +201,29 @@ def checkout(request):
     """
         This is the view to save checkout information to database and create a Stripe checkout session.
     """
-    if not request.session.has_key(settings.SESSION_ADDRESS_KEY):
-        messages.add_message(request, messages.ERROR, "Invalid checkout session.")
+    if not request.session.has_key(settings.SESSION_CART_KEY):
+        messages.add_message(request, messages.ERROR, "Invalid cart session.")
         return redirect("cart")
     
     cart = Cart(session_cart=request.session.get(settings.SESSION_CART_KEY))
     try:
         checkout_session = stripe.checkout.Session.create(
+            shipping_options=[
+                {
+                    # Make sure shipping_rate from correct Stripe environment
+                    "shipping_rate": settings.STRIPE_SHIPPING_RATE_ID
+                }
+            ],
+            shipping_address_collection={"allowed_countries": get_all_shipping_countries()},
+            mode="payment",
+            success_url=settings.STRIPE_CHECKOUT_SUCCESS_URL,
             line_items=[
                 {
                     "price": variation.stripe_price_id,
                     "quantity": quantity,
                 } for variation, quantity in cart.get_items_for_checkout_session()
             ],
-            mode="payment",
-            success_url=settings.STRIPE_CHECKOUT_SUCCESS_URL
         )
-
     # Fix this!
     except Exception as e:
         # Log this!
@@ -254,12 +231,7 @@ def checkout(request):
         return redirect("cart")
     
     create_poster_order(request, checkout_session.id, cart)
-    
     cart.clear_cart(request)
-    
-    # Right now we are not even checking for this one in address page, right???
-    del request.session[settings.SESSION_ADDRESS_KEY]
-    
     return redirect(checkout_session.url)
     
 
@@ -288,11 +260,22 @@ def webhook(request):
         poster_order = PosterOrder.objects.get(
             stripe_checkout_session_id=event["data"]["object"]["id"]
         )
+        event_customer_details = event["data"]["object"]["customer_details"]
+        address = Address.objects.create(
+            name = event_customer_details["name"],
+            email = event_customer_details["email"],
+            line1 = event_customer_details["address"]["line1"],
+            line2 = event_customer_details["address"]["line2"],
+            city = event_customer_details["address"]["city"],
+            state = event_customer_details["address"]["state"],
+            postal_code = event_customer_details["address"]["postal_code"],
+            country = event_customer_details["address"]["country"],
+        )
+        poster_order.address = address
         poster_order.stripe_payment_intent_id = event["data"]["object"]["payment_intent"]
         poster_order.status = PosterOrderStatus.PAID
         poster_order.save()
 
-        # This is current stage... Work on this after merging cart refactor.
         send_producer_email(poster_order)
         send_customer_receipt_email(poster_order)
 

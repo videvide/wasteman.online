@@ -1,20 +1,47 @@
 {% extends 'base.html' %}
 {% block body %}
 <h1>Artwork page</h1>
-<p>This is where posters and paintings pages is</p>
 
 {% if poster %}
-    <p>{{ poster.name }}</p>
+    <p>Title: {{ poster.name }}</p>
+    <p>Description: {{ poster.description }}</p>
+    <p>Year: {{ poster.year }}</p>
+    <p>Ratio: {{ poster.ratio|capfirst }}</p>
     <form method="post">
         {% csrf_token %}
         {{ form }}
-        <input type="submit" value="Add to cart">
+        <p>
+            <input type="submit" value="Add to cart">
+        </p>
     </form>
+    {% if poster.images %}
+        <ul class="artwork-images-ul">
+            {% for image in poster.images.all %}
+                <li>
+                    <img class="artwork-image" src="{{ image.image.url }}" alt="{{ image.alt_text }}">
+                </li>
+            {% endfor %}
+        </ul>
+    {% endif %}
 {% endif %}
 
 {% if painting %}
-    <p>{{ painting.name }}</p>
-    <p>Contact to buy!</p>
+    <p>Title: {{ painting.name }}</p>
+    <p>Description: {{ painting.description }}</p>
+    <p>Year: {{ painting.year }}</p>
+    <p>Width: {{ painting.width }}cm</p>
+    <p>Height: {{ painting.height }}cm</p>
+    <p>Available: {% if painting.in_stock %}✅{% else %}❌{% endif %}</p>
+    <p><a href="mailto:hello@wasteman.online">Contact to buy!</a></p>
+    {% if painting.images %}
+        <ul class="artwork-images-ul">
+            {% for image in painting.images.all %}
+                <li>
+                    <img class="artwork-image" src="{{ image.image.url }}" alt="{{ image.alt_text }}">
+                </li>
+            {% endfor %}
+        </ul>
+    {% endif %}
 {% endif %}
 
 {% endblock body %}

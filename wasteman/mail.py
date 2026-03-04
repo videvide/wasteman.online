@@ -36,7 +36,7 @@ def send_customer_receipt_email(poster_order):
                 Your items:\n
                 {poster_order.print_line_items}\n
                 Your shipping address:\n
-                {poster_order.address.text_output}\n
+                {poster_order.address.text_output_with_email}\n
                 Please contact us if you have any questions!\n
                 Thank you!
             """,

@@ -4,19 +4,19 @@
 
 {% if posters %}
     {% for poster in posters %}
+        <p><img src="{{ poster.images.first.image.url }}" alt="{{ poster.images.first.alt_text }}"></p>
         <p>{{ poster.name }}</p>
         <a href="{% url 'poster' poster.id %}">View poster</a>
     {% endfor %}
-{% endif %}
 
-{% if paintings %}
+{% elif paintings %}
     {% for painting in paintings %}
+        <p><img src="{{ painting.images.first.image.url }}" alt="{{ painting.images.first.alt_text }}"></p>
         <p>{{ painting.name }}</p>
-        <a href="{% url 'painting' painting.id %}">View poster</a>
+        <a href="{% url 'painting' painting.id %}">View painting</a>
     {% endfor %}
-{% endif %}
 
-{% if not posters or paintings %}
+{% else %}
     <p>Waiting for {{ page|lower }} to show up...</p>
 {% endif %}
 

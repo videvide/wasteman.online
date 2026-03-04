@@ -6,7 +6,7 @@ from django.conf import settings
 from .my_stripe import stripe
 
 class ImageBase(models.Model):
-    image = models.ImageField()
+    image = models.ImageField(upload_to="artwork_images/")
     alt_text = models.CharField(max_length=255, blank=True, null=True)
 
 
@@ -54,15 +54,15 @@ class Artwork(models.Model):
 
 
 class ArtworkImage(ImageBase):
-    artwork = models.ForeignKey(Artwork, on_delete=models.CASCADE)
+    artwork = models.ForeignKey(Artwork, related_name="images", on_delete=models.CASCADE)
 
 
 class Details(models.Model):
     class Meta:
         abstract = True
 
-    height = models.CharField(verbose_name="Height in cm", max_length=255)
     width = models.CharField(verbose_name="Width in cm", max_length=255)
+    height = models.CharField(verbose_name="Height in cm", max_length=255)
     listed = models.BooleanField(default=False)
     in_stock = models.BooleanField(default=True)
 
@@ -142,28 +142,30 @@ class PosterVariation(Details):
 
 class Address(models.Model):
     """Shipping address for those who purchase posters."""
-    first_name = models.CharField(max_length=255)
-    last_name = models.CharField(max_length=255)
-    line_1 = models.CharField(max_length=255)
-    line_2 = models.CharField(max_length=255, blank=True, null=True)
+    name = models.CharField(max_length=255)
+    email = models.EmailField(max_length=255)
+    line1 = models.CharField(max_length=255)
+    line2 = models.CharField(max_length=255, blank=True, null=True)
     city = models.CharField(max_length=255)
     state = models.CharField(verbose_name="State/Province/Region", max_length=255, blank=True, null=True)
-    zip = models.CharField(verbose_name="Zip code", max_length=255)
-    country = models.CharField(max_length=255)
-    email = models.EmailField(max_length=255)
+    postal_code = models.CharField(verbose_name="Postal code", max_length=255)
+    country = models.CharField(verbose_name="Two letter country code", max_length=255)
 
     @property
     def text_output(self):
         return f"""
-                Name: {self.first_name} {self.last_name}
-                Line 1: {self.line_1}
-                Line 2: {self.line_2 if self.line_2 else ""}
+                Name: {self.name}
+                Line 1: {self.line1}
+                Line 2: {self.line2 if self.line2 else ""}
                 City: {self.city}
                 State: {self.state if self.state else ""}
-                Zip: {self.zip}
+                Postal code: {self.postal_code}
                 Country: {self.country}
-                Email: {self.email}
         """
+    
+    @property
+    def text_output_with_email(self):
+        return self.text_output + f"Email: {self.email}\n"
 
 
 class PosterOrderStatus(models.TextChoices):
