@@ -4,12 +4,13 @@ from django.urls import path
 from django.views.generic import TemplateView
 from django.conf.urls.static import static
 
-from .views import home, register, logout, login, profile, poster, posters, cart, checkout, paintings, painting, webhook
+from .views import home, register, logout, login, profile, poster, posters, cart, checkout, paintings, painting, webhook, newsletter_signup
 
 urlpatterns = [
     path('admin/', admin.site.urls),
 
     path('', home, name="home"),
+    # path('newsletter-signup', newsletter_signup, name="newsletter_signup"),
     path("about/", TemplateView.as_view(template_name="about.html"), name="about"),
 
     # path("profile", profile, name="profile"),

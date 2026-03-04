@@ -2,7 +2,7 @@ from django import forms
 from django.contrib.auth.password_validation import validate_password
 from django.utils.safestring import mark_safe
 
-from .models import Address
+from .models import NewsletterEmail
 
 """This is for later..."""
 class ProfileForm(forms.Form):
@@ -48,3 +48,9 @@ class UpdateCartForm(forms.Form):
     variation = forms.CharField(widget=forms.HiddenInput(), help_text="Should be provided from view.")
     quantity = forms.IntegerField()
     remove = forms.BooleanField(required=False)
+
+
+class NewsletterForm(forms.ModelForm):
+    class Meta:
+        model = NewsletterEmail
+        fields = ["email", "consent"]
