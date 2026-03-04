@@ -8,9 +8,6 @@ ul {
     padding: 0px;
     display: flex;
     gap: 1rem;
-}
-
-ul {
     list-style-type: none;
 }
 
