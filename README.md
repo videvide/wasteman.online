@@ -1,5 +1,7 @@
 ## Running the application
 
+## TODO: Fix environment with all varaibles for easy deploy....
+
 - [Create a Stripe account](https://dashboard.stripe.com/register)
 - Clone the project and install the dependencies
 - Set the necessary environment variables from .dummy.env
