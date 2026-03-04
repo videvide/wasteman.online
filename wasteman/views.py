@@ -10,7 +10,9 @@ from django.contrib.auth import authenticate, login as login_function
 from django.contrib.auth.forms import PasswordChangeForm
 from django.forms import formset_factory
 from django.conf import settings
-from django.http import HttpResponse, JsonResponse
+from django.http import HttpResponse, JsonResponse, HttpResponseBadRequest
+from django.core.signing import Signer, BadSignature
+from django.views.decorators.http import require_http_methods
 
 from wasteman.utils import get_all_shipping_countries
 
@@ -18,39 +20,50 @@ from .forms import NewsletterForm, RegisterForm, LoginForm, AddToCartForm, Updat
 from .models import Address, NewsletterEmail, Wasteman, Poster, Painting, PosterOrder, PosterOrderStatus, PosterOrderVariation
 from .cart import Cart
 
-from .mail import send_producer_email, send_customer_receipt_email
+from .mail import send_producer_email, send_customer_receipt_email, send_newsletter_confirmation_email
 from .my_stripe import stripe
 
 
 def home(request):
-    # newsletter_form = NewsletterForm()
-    return render(request, "home.html", {"title": "Home Page"})
+    newsletter_form = NewsletterForm()
+    return render(request, "home.html", {"title": "Home Page", "newsletter_form": newsletter_form})
 
 
-"""Needs email verification..."""
+@require_http_methods(["GET"])
+def newsletter_confirmation(request, token):
+    signer = Signer()
+    try: 
+        breakpoint()
+        email = signer.unsign(token)
+        email = NewsletterEmail.objects.get(email=email)
+    except BadSignature:
+        return HttpResponseBadRequest("Invalid token.")
+    except NewsletterEmail.DoesNotExist:
+        # Log this since it should not happen...
+        return HttpResponse(500)
+    
+    email.confirmed = True
+    email.save()
+
+    messages.add_message(request, messages.SUCCESS, "You successfully confirmed your email!")
+    return redirect("home")
+
+
+@require_http_methods(["POST"])
 def newsletter_signup(request):
-#     {% if newsletter_form %}
-#     <h3>Signup for our newsletter:</h3>
-#     <form action="{% url 'newsletter_signup' %}">
-#         {% csrf_token %}
-#         {{ newsletter_form }}
-#         <input type="submit" value="Sign me up">
-#     </form>
-# {% endif %}
-# <!-- add newsletter signup -->
-    # check if email is already signed up...
-    # email need to be verified...
-    if request.method == "POST":
-        form = NewsletterForm(request.POST)
-        if form.is_valid():
-            NewsletterEmail.objects.update_or_create(
-                email=form.cleaned_data["email"],
-                consent=form.cleaned_data["consent"]
-            )
-            messages.add_message(request, messages.SUCCESS, "You successfully signed up for our newsletter!")
+    form = NewsletterForm(request.POST)
+    if form.is_valid():
+        if not form.cleaned_data["consent"]:
+            messages.add_message(request, messages.INFO, "You must give consent to signup for our newsletter.")
             return redirect("home")
-    else:
-        messages.add_message(request, messages.SUCCESS, "Failed to sign up for our newsletter, try again or contact support!")
+        
+        email = NewsletterEmail.objects.filter(email=form.cleaned_data["email"])
+        if not email:
+            email = NewsletterEmail.objects.create(email=form.cleaned_data["email"])
+
+            send_newsletter_confirmation_email(form.cleaned_data["email"])
+
+        messages.add_message(request, messages.SUCCESS, "You successfully signed up for our newsletter, check your inbox for confirmation email!")
         return redirect("home")
     
 

@@ -6,4 +6,12 @@
     <li><a href="{% url 'posters' %}">View our posters</a></li>
     <li><a href="{% url 'paintings' %}">View our paintings</a></li>
 </ul>
+{% if newsletter_form %}
+    <h3>Signup for our newsletter:</h3>
+    <form action="{% url 'newsletter_signup' %}" method="post">
+        {% csrf_token %}
+        {{ newsletter_form }}
+        <input type="submit" value="Sign me up">
+    </form>
+{% endif %}
 {% endblock body %}

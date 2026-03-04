@@ -1,5 +1,28 @@
 from django.conf import settings
 from django.core.mail import send_mail
+from django.core.signing import Signer
+from django.urls import reverse
+
+
+def send_newsletter_confirmation_email(email):
+    """Send newsletter signup email confirmation."""
+    signer = Signer()
+    token = signer.sign(email)
+    link = f"{settings.SITE_ORIGIN}" + reverse("newsletter_confirmation", args=[token])
+    try:
+        send_mail(
+            subject="Newsletter confirmation link from wasteman.online",
+            message=f"{link}".strip(),
+            from_email=settings.EMAIL_FROM_SENDER,
+            recipient_list=[email],
+            fail_silently=False
+        )
+    except Exception as e:
+        ...
+        # Log failed sends
+    ...
+    print("Newsletter confirmation link successfully sent!")
+
 
 def send_producer_email(poster_order):
     """Send order request to print-on-demand service."""

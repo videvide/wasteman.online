@@ -163,3 +163,6 @@ EMAIL_HOST_PASSWORD = get_env_vars("EMAIL_HOST_PASSWORD")
 EMAIL_FROM_SENDER = get_env_vars("EMAIL_FROM_SENDER")
 # Enter the producer email address
 EMAIL_PRODUCER = get_env_vars("EMAIL_PRODUCER")
+
+# Site origin used for newsletter confirmation links
+SITE_ORIGIN = get_env_vars("SITE_ORIGIN")

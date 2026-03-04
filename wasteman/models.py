@@ -23,9 +23,8 @@ class ImageBase(models.Model):
 class NewsletterEmail(models.Model):
     """Model to store emails to send newsletters."""
     email = models.EmailField()
-    consent = models.BooleanField(default=True, verbose_name="I want to receive marketing emails")
-    # Write functionality for this...
-    verified = models.BooleanField(default=False)
+    consent = models.BooleanField(default=True, verbose_name="I want to receive newsletters")
+    confirmed = models.BooleanField(default=False)
 
 
 class UserInformation(models.Model):

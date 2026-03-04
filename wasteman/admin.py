@@ -1,8 +1,9 @@
 from django.contrib import admin
 
-from .models import Wasteman, Painting, Poster, ArtworkImage, PosterVariation
+from .models import Wasteman, Painting, Poster, ArtworkImage, PosterVariation, NewsletterEmail
 
 admin.site.register(Wasteman)
+admin.site.register(NewsletterEmail)
 
 class ArtworkImageStackedInline(admin.StackedInline):
     model = ArtworkImage
