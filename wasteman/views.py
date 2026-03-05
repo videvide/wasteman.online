@@ -163,7 +163,7 @@ def prepare_variation_choices(poster):
 # Looks ok atm...
 def poster(request, id):
     """Renders poster page and handles adding to cart."""
-    poster = Poster.objects.get(pk=id)
+    poster = get_object_or_404(Poster, pk=id)
 
     if request.method == "POST":
         form = AddToCartForm(request.POST, variation_choices=prepare_variation_choices(poster))
@@ -225,7 +225,7 @@ def create_poster_order(request, checkout_session_id, cart: Cart):
         poster_order = PosterOrder.objects.create(
             stripe_checkout_session_id=checkout_session_id
         )
-        for variation, quantity in cart.get_items_for_poster_order():
+        for variation, quantity in cart.get_variations_and_quantity():
             poster_order_variation = PosterOrderVariation.objects.create(
                 poster_order=poster_order,
                 variation=variation,
@@ -270,7 +270,7 @@ def checkout(request):
                 {
                     "price": variation.stripe_price_id,
                     "quantity": quantity,
-                } for variation, quantity in cart.get_items_for_checkout_session()
+                } for variation, quantity in cart.get_variations_and_quantity()
             ],
         )
     # Fix this!

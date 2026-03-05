@@ -1,25 +1,19 @@
 {% extends 'base.html' %}
 {% block body %}
 <h1>Cart</h1>
-
 {% if forms_and_variations %}
+<p>You can review and update your cart items:</p>
 <form method="post">
     {% csrf_token %}
     {{ formset.management_form }}
     {% for form_and_variation in forms_and_variations %}
         {% for variation, form in form_and_variation.items %}
-            <p>
-                <img class="cart-artwork-image" src="{{ variation.poster.images.first.image.url }}" alt="">
-            </p>
-            <p>
-                Title: {{variation.poster.name}}
-            </p>
-            <p>
-                Size: {{variation.height}}cm x {{variation.width}}cm
-            </p>
-            <p>
-                Price: {{variation.price}} kr each
-            </p>
+            <ul class="artwork-details">
+                <li><span><img class="cart-artwork-image" src="{{ variation.poster.images.first.image.url }}" alt=""></span></li>
+                <li><span>Title: {{variation.poster.name}}</span></li>
+                <li><span>Size: {{variation.height}}cm x {{variation.width}}cm</span></li>
+                <li><span>Price: {{variation.price}} kr each</span></li>
+            </ul>
             {{form}}
         {% endfor %}
     {% endfor %}
@@ -28,11 +22,12 @@
     </p>
 </form>
 <hr>
-<p>Shipping: 1 poster 95 kr (+1 poster 35 kr each) 🙂</p>
-<p>Poster cost: {{ total_poster_cost }} kr</p>
-<p>Shipping cost: {{ total_shipping_cost|floatformat:2 }} kr</p>
-<p>Total cost: {{ total_cost }} kr</p>
-<!-- just add a anchor tag to the address page -->
+<ul class="artwork-details">
+    <p>This is what you will pay:</p>
+    <li><span>Poster cost: {{ total_poster_cost }} kr</span></li>
+    <li><span>Shipping cost: {{ total_shipping_cost|floatformat:2 }} kr</span></li>
+    <li><span>Total cost: {{ total_cost }} kr</span></li>
+</ul>
 <a href="{% url 'checkout' %}">Continue to checkout -></a>
 {% else %}
     <p>Nothing here...</p>

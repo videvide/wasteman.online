@@ -7,18 +7,48 @@ ul {
     margin: 0px;
     padding: 0px;
     display: flex;
-    gap: 1rem;
     list-style-type: none;
+    gap: 1rem;
 }
 
-.artwork-images-ul {
+.artworks-list {
+    display: flex;
     flex-direction: column;
 }
 
-.artwork-image {
+.artwork-images {
+    flex-direction: column;
+}
+
+.artwork-details {
+    gap: 0;
+    flex-direction: column;
+    margin-bottom: 1rem;
+}
+
+img {
     max-width: 100%;
+    height: auto;
 }
 
 .cart-artwork-image {
     max-width: 150px;
+}
+
+#messages-container {
+    margin: 1rem;
+    padding: 1rem;
+    border: 1px grey solid;
+    background-color: lightgray;
+}
+
+@media only screen and (min-width: 768px) {
+    body {
+        margin: 0 auto;
+        padding: 1rem;
+    }
+    img {
+        max-width: 50%;
+        height: auto;
+    }
 }

@@ -1,22 +1,26 @@
 {% extends 'base.html' %}
 {% block body %}
-<h1>{{ page }}</h1>
-
+<h1>{{ page }} page</h1>
 {% if posters %}
-    {% for poster in posters %}
-        <a href="{% url 'poster' poster.id %}">
-            <p><img src="{{ poster.images.first.image.url }}" alt="{{ poster.images.first.alt_text }}"></p>
-            <p>Title: {{ poster.name }} (click to view)</p>
-        </a>
-    {% endfor %}
-
+    <ul class="artworks-list">
+        {% for poster in posters %}
+            <li>
+                <a href="{% url 'poster' poster.id %}">
+                    <div><img src="{{ poster.images.first.image.url }}" alt="{{ poster.images.first.alt_text }}"></div>
+                </a>
+            </li>
+        {% endfor %}
+    </ul>
 {% elif paintings %}
-    {% for painting in paintings %}
-        <a href="{% url 'painting' painting.id %}">
-            <p><img src="{{ painting.images.first.image.url }}" alt="{{ painting.images.first.alt_text }}"></p>
-            <p>Title: {{ painting.name }} (click to view)</p>
-        </a>
-    {% endfor %}
+    <ul class="artworks-list">
+        {% for painting in paintings %}
+            <li>
+                <a href="{% url 'painting' painting.id %}">
+                    <div><img class="artwork-image" src="{{ painting.images.first.image.url }}" alt="{{ painting.images.first.alt_text }}"></div>
+                </a>
+            </li>
+        {% endfor %}
+    </ul>
 
 {% else %}
     <p>Waiting for {{ page|lower }} to show up...</p>

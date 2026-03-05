@@ -1,13 +1,15 @@
 {% extends 'base.html' %}
 {% block body %}
-<h1>Artwork page</h1>
 
 {% if poster %}
-    <p>Title: {{ poster.name }}</p>
-    <p>Description: {{ poster.description }}</p>
-    <p>Year: {{ poster.year }}</p>
-    <p>Ratio: {{ poster.ratio|capfirst }}</p>
-    <p>All sizes are available ✅</p>
+<h1>Poster page</h1>
+<ul class="artwork-details">
+        <li><span>Title: {{ poster.name }}</span></li>
+        <li><span>Description: {{ poster.description }}</span></li>
+        <li><span>Year: {{ poster.year }}</span></li>
+        <li><span>Ratio: {{ poster.ratio|capfirst }}</span></li>
+        <li><span>All sizes are available ✅</span></li>
+    </ul>
     <form method="post">
         {% csrf_token %}
         {{ form }}
@@ -16,7 +18,7 @@
         </p>
     </form>
     {% if poster.images %}
-        <ul class="artwork-images-ul">
+        <ul class="artwork-images">
             {% for image in poster.images.all %}
                 <li>
                     <img class="artwork-image" src="{{ image.image.url }}" alt="{{ image.alt_text }}">
@@ -27,15 +29,17 @@
 {% endif %}
 
 {% if painting %}
-    <p>Title: {{ painting.name }}</p>
-    <p>Description: {{ painting.description }}</p>
-    <p>Year: {{ painting.year }}</p>
-    <p>Width: {{ painting.width }}cm</p>
-    <p>Height: {{ painting.height }}cm</p>
-    <p>Available: {% if painting.in_stock %}✅{% else %}❌{% endif %}</p>
-    <p><a href="mailto:hello@wasteman.online">Contact to buy!</a></p>
+<h1>Painting page</h1>
+    <ul class="artwork-details">
+        <li><span>Title: {{ painting.name }}</span></li>
+        <li><span>Description: {{ painting.description }}</span></li>
+        <li><span>Year: {{ painting.year }}</span></li>
+        <li><span>Width: {{ painting.width }}cm</span></li>
+        <li><span>Height: {{ painting.height }}cm</span></li>
+        <li><span>Available: {% if painting.in_stock %}✅ <a href="mailto:hello@wasteman.online">Contact to buy!</a>{% else %}❌{% endif %}</span></li>
+    </ul>
     {% if painting.images %}
-        <ul class="artwork-images-ul">
+        <ul class="artwork-images">
             {% for image in painting.images.all %}
                 <li>
                     <img class="artwork-image" src="{{ image.image.url }}" alt="{{ image.alt_text }}">

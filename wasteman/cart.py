@@ -16,7 +16,7 @@ class Cart:
         return
 
     def get_total_poster_cost(self):
-        return sum([variation.price for variation in self.get_variations_list()])
+        return sum([variation.price * quantity for variation, quantity in self.get_variations_and_quantity()])
     
 
     def get_total_shipping_cost(self):
@@ -87,14 +87,7 @@ class Cart:
         for variation, form in zip(self.get_variations_list(), formset):
             variations_and_forms.append({variation: form})
         return variations_and_forms
-
-  
-    def get_items_for_checkout_session(self):
-        return ((PosterVariation.objects.get(pk=id), quantity) for id, quantity in self.items.items())
-
-
-    def get_items_for_poster_order(self):
-        return ((PosterVariation.objects.get(pk=id), quantity) for id, quantity in self.items.items())
     
 
-        
+    def get_variations_and_quantity(self):
+        return ((PosterVariation.objects.get(pk=id), quantity) for id, quantity in self.items.items())
