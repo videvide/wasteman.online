@@ -33,7 +33,7 @@
     <p>Width: {{ painting.width }}cm</p>
     <p>Height: {{ painting.height }}cm</p>
     <p>Available: {% if painting.in_stock %}✅{% else %}❌{% endif %}</p>
-    <h3><a href="mailto:hello@wasteman.online">Contact to buy!</a></h3>
+    <p><a href="mailto:hello@wasteman.online">Contact to buy!</a></p>
     {% if painting.images %}
         <ul class="artwork-images-ul">
             {% for image in painting.images.all %}
