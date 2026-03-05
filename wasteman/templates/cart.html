@@ -2,7 +2,7 @@
 {% block body %}
 <h1>Cart</h1>
 {% if forms_and_variations %}
-<p>You can review and update your cart items:</p>
+<p>You can review and update your cart items</p>
 <form method="post">
     {% csrf_token %}
     {{ formset.management_form }}
@@ -23,10 +23,10 @@
 </form>
 <hr>
 <ul class="artwork-details">
-    <p>This is what you will pay:</p>
-    <li><span>Poster cost: {{ total_poster_cost }} kr</span></li>
-    <li><span>Shipping cost: {{ total_shipping_cost|floatformat:2 }} kr</span></li>
-    <li><span>Total cost: {{ total_cost }} kr</span></li>
+    <p>This is what you will pay</p>
+    <li><span>Poster: {{ total_poster_cost }} kr</span></li>
+    <li><span>Shipping: {{ total_shipping_cost|floatformat:2 }} kr ( 1st 95kr, then 35kr/st )</span></li>
+    <li><span>Total: {{ total_cost }} kr</span></li>
 </ul>
 <a href="{% url 'checkout' %}">Continue to checkout -></a>
 {% else %}

@@ -1,13 +1,15 @@
 {% extends 'base.html' %}
 {% block body %}
-<h1>{{ page }} page</h1>
+<h1>{{ page }}</h1>
+<p>Browse {{ page|lower }} or <a href="mailto:hello@wasteman.online">contact us</a> with any inquiries</p>
+
 {% if posters %}
-    <ul class="artworks-list">
-        {% for poster in posters %}
-            <li>
-                <a href="{% url 'poster' poster.id %}">
-                    <div><img src="{{ poster.images.first.image.url }}" alt="{{ poster.images.first.alt_text }}"></div>
-                </a>
+<ul class="artworks-list">
+    {% for poster in posters %}
+    <li>
+        <a href="{% url 'poster' poster.id %}">
+            <div><img src="{{ poster.images.first.image.url }}" alt="{{ poster.images.first.alt_text }}"></div>
+        </a>
             </li>
         {% endfor %}
     </ul>

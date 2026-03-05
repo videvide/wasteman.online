@@ -2,8 +2,8 @@
 {% block body %}
 
 {% if poster %}
-<h1>Poster page</h1>
-<ul class="artwork-details">
+    <h1>{{ poster.name }}</h1>
+    <ul class="artwork-details">
         <li><span>Title: {{ poster.name }}</span></li>
         <li><span>Description: {{ poster.description }}</span></li>
         <li><span>Year: {{ poster.year }}</span></li>
@@ -29,7 +29,7 @@
 {% endif %}
 
 {% if painting %}
-<h1>Painting page</h1>
+    <h1>{{ painting.name }}</h1>
     <ul class="artwork-details">
         <li><span>Title: {{ painting.name }}</span></li>
         <li><span>Description: {{ painting.description }}</span></li>
