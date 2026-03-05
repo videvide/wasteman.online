@@ -1,5 +1,8 @@
 import os
 from typing import Optional
+from django.conf import settings
+from django.core.signing import Signer
+from django.urls import reverse
 
 def get_env_vars(key: str, default: Optional[str] = None) -> str:
     """Retrives an environment variable or raises error if not found."""
@@ -39,3 +42,14 @@ def get_all_shipping_countries():
     "US", "UY", "UZ", "VA", "VC", "VE", "VG", "VN", "VU", "WF",
     "WS", "XK", "YE", "YT", "ZA", "ZM", "ZW", "ZZ",
 ]
+
+def create_signed_newsletter_email_token_link(email):
+    signer = Signer()
+    token = signer.sign(email)
+    return f"{settings.SITE_ORIGIN}" + reverse("newsletter_confirmation", args=[token]) # strip() ???
+
+
+def verify_signed_newsletter_email_token(token):
+    signer = Signer()
+    return signer.unsign(token)
+        

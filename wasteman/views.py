@@ -11,10 +11,10 @@ from django.contrib.auth.forms import PasswordChangeForm
 from django.forms import formset_factory
 from django.conf import settings
 from django.http import HttpResponse, JsonResponse, HttpResponseBadRequest
-from django.core.signing import Signer, BadSignature
+from django.core.signing import BadSignature
 from django.views.decorators.http import require_http_methods
 
-from wasteman.utils import get_all_shipping_countries
+from wasteman.utils import get_all_shipping_countries, verify_signed_newsletter_email_token
 
 from .forms import NewsletterForm, RegisterForm, LoginForm, AddToCartForm, UpdateCartForm
 from .models import Address, NewsletterEmail, Wasteman, Poster, Painting, PosterOrder, PosterOrderStatus, PosterOrderVariation
@@ -31,9 +31,8 @@ def home(request):
 
 @require_http_methods(["GET"])
 def newsletter_confirmation(request, token):
-    signer = Signer()
     try: 
-        email = signer.unsign(token)
+        email = verify_signed_newsletter_email_token(token)
         email = NewsletterEmail.objects.get(email=email)
     except BadSignature:
         return HttpResponseBadRequest("Invalid token.")
@@ -41,8 +40,9 @@ def newsletter_confirmation(request, token):
         # Log this since it should not happen...
         return HttpResponse(500)
     
-    email.confirmed = True
-    email.save()
+    if not email.confirmed:
+        email.confirmed = True
+        email.save()
 
     messages.add_message(request, messages.SUCCESS, "You successfully confirmed your email!")
     return redirect("home")
@@ -59,7 +59,6 @@ def newsletter_signup(request):
         email = NewsletterEmail.objects.filter(email=form.cleaned_data["email"])
         if not email:
             email = NewsletterEmail.objects.create(email=form.cleaned_data["email"])
-
             send_newsletter_confirmation_email(form.cleaned_data["email"])
 
         messages.add_message(request, messages.SUCCESS, "You successfully signed up for our newsletter, check your inbox for confirmation email!")

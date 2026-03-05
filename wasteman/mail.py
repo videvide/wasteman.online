@@ -1,18 +1,15 @@
 from django.conf import settings
 from django.core.mail import send_mail
-from django.core.signing import Signer
-from django.urls import reverse
+
+from wasteman.utils import create_signed_newsletter_email_token_link
 
 
 def send_newsletter_confirmation_email(email):
     """Send newsletter signup email confirmation."""
-    signer = Signer()
-    token = signer.sign(email)
-    link = f"{settings.SITE_ORIGIN}" + reverse("newsletter_confirmation", args=[token])
     try:
         send_mail(
             subject="Newsletter confirmation link from wasteman.online",
-            message=f"{link}".strip(),
+            message=create_signed_newsletter_email_token_link(email),
             from_email=settings.EMAIL_FROM_SENDER,
             recipient_list=[email],
             fail_silently=False
